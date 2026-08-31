@@ -7,7 +7,7 @@ import SentinelLogo from '../components/SentinelLogo.jsx';
 // Paddle-style marketing landing page for Sentinel:
 //   • a soft pastel-gradient hero, and
 //   • a floating collage of product cards revealed on scroll.
-// The console (everything behind "Open console") keeps the clean Attio white theme.
+// The console (everything behind "Open console") keeps the clean white theme.
 
 export default function Landing() {
   return (
@@ -216,13 +216,13 @@ function Showcase() {
   return (
     <section className="relative z-10 pt-8 lg:pb-0">
       {/* Fixed-height stage: every card is taller than its slot, so they all clip
-          at the SAME bottom line (bottom-anchored, bleeding off) — like Lago.
+          at the SAME bottom line (bottom-anchored, bleeding off).
           Tops form a symmetric pyramid: Case peaks, Live & Recovery one step down,
           Revenue & Activity lowest. A soft fade dissolves the card bottoms. */}
       <div className="relative lg:h-[676px] lg:overflow-hidden">
         {/* Overlapping z-fan (no gaps): Case/Invoice is in FRONT; each neighbour
             tucks behind the more-central card, so the grey glass-frame edge peeks
-            where one card slides under the next — exactly like Lago. */}
+            where one card slides under the next. */}
         <div className="px-6 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-center lg:gap-0 lg:w-max lg:mx-auto">
           {/* 1 · Revenue at Risk — lowest level, behind col 2 (enters last) */}
           <div className="w-full lg:w-[312px] lg:mt-[236px] lg:h-[440px] lg:overflow-hidden relative z-10 card-in" style={{ animationDelay: '420ms' }}>
@@ -1622,7 +1622,7 @@ const ACTIONS = [
   { t: 'STOP', c: 'bg-red-500' },
 ];
 
-/* -------------------------------------------------- Recovery loop (Attio-style stepper) */
+/* -------------------------------------------------- Recovery loop (scroll stepper) */
 const LOOP_STEPS = [
   { n: '01', k: 'Detect', img: '/loop-detect.jpg', head: 'Notice the money at risk.', sub: 'A failed payment, an abandoned checkout, an overdue invoice — flagged the moment it happens, with the amount attached.' },
   { n: '02', k: 'Diagnose', img: '/loop-diagnose.jpg', head: 'Find the real reason.', sub: 'Sentinel classifies each failure — gateway timeout, expired card, failed mandate, or abandoned intent — not just that it failed.' },
@@ -3073,7 +3073,7 @@ function RiskIcon({ kind }) {
   return (<svg {...p}><path d="M6 2h9l5 5v15H6z" /><path d="M14 2v6h6" /><line x1="9" y1="13" x2="16" y2="13" /><line x1="9" y1="17" x2="14" y2="17" /></svg>);
 }
 
-/* ------------------------------------------------------------------ Night shift (Attio-style statement) */
+/* ------------------------------------------------------------------ Night shift (statement) */
 function NightShift() {
   return (
     <section className="bg-white border-t border-black/[0.05]">
