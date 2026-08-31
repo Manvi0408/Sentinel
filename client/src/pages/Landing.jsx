@@ -2531,7 +2531,7 @@ function RecoveryEngineDiagram() {
     { y: 276, cls: { t: 'Transient', s: 'gateway timeout', c: '#3B82F6' }, act: { t: 'Smart retry', s: 'cooled-off', c: '#3B82F6' }, out: 'rec' },
     { y: 384, cls: { t: 'Risk / fraud', s: 'risk_check_failed', c: '#EF4444' }, act: { t: 'Block & escalate', s: 'never contact', c: '#EF4444' }, out: 'stop' },
   ];
-  const startX = 24, sW = 130, diagX = 190, dW = 150, clsX = 388, clsW = 168, actX = 606, actW = 196, polX = 850, polW = 156, outX = 1046, outW = 158;
+  const startX = 26, sW = 152, diagX = 200, dW = 150, clsX = 388, clsW = 168, actX = 606, actW = 196, polX = 850, polW = 156, outX = 1046, outW = 158;
   const midY = 222, cY = midY + 27; // start/diagnose/policy vertical centre
   const cy = (ry) => ry + 27;
   const happy = `M${startX + sW} ${cY} L${diagX} ${cY} L${diagX + dW} ${cY} C${(diagX + dW + clsX) / 2} ${cY}, ${(diagX + dW + clsX) / 2} ${cy(60)}, ${clsX} ${cy(60)} L${clsX + clsW} ${cy(60)} L${actX} ${cy(60)} L${actX + actW} ${cy(60)} C${(actX + actW + polX) / 2} ${cy(60)}, ${(actX + actW + polX) / 2} ${cY}, ${polX} ${cY} L${polX + polW} ${cY} C${(polX + polW + outX) / 2} ${cY}, ${(polX + polW + outX) / 2} ${150}, ${outX} ${150}`;
@@ -2580,7 +2580,7 @@ function RecoveryEngineDiagram() {
             )}
 
             {/* nodes */}
-            <DNode x={startX} y={midY} w={sW} label="Failed payment" sub="detected · code/step/reason" color="#22C55E" play={play} delay={0.05} />
+            <DNode x={startX} y={midY} w={sW} label="Failed payment" sub="code · step · reason" color="#22C55E" play={play} delay={0.05} />
             <DNode x={diagX} y={midY} w={dW} label="Diagnose" sub="LLM + rules engine" color="#3B82F6" play={play} delay={0.18} />
             {rows.map((r, i) => (
               <g key={i}>
