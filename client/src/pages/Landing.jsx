@@ -2410,7 +2410,7 @@ function MeasuredResults() {
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Card 1 — DIAGNOSE (bluish glass) */}
           <MCard label="Diagnose" blur={2}
-            bg="repeating-linear-gradient(90deg, rgba(255,255,255,0.10) 0 1px, transparent 1px 13px), linear-gradient(112deg,#d6e9ff 0%,#7ba5d5 30%,#33517b 64%,#182b43 100%)"
+            bg="url('/card-diagnose.jpg')"
             link="See how it works" onClick={() => scrollToId('how-it-works')}
             sub="Razorpay code · step · reason → one bounded action. No blind retries.">
             <Statement lines={["Every failure", "gets a real", "diagnosis."]} />
@@ -2438,7 +2438,8 @@ function MeasuredResults() {
 
           {/* Card 3 — RECOVERED (bluish glass) */}
           <MCard label="Recovered" blur={3}
-            bg="radial-gradient(circle at 24% 22%, rgba(255,255,255,0.5), transparent 11%), radial-gradient(circle at 68% 30%, rgba(255,255,255,0.4), transparent 13%), radial-gradient(circle at 46% 58%, rgba(230,240,255,0.34), transparent 15%), radial-gradient(circle at 82% 66%, rgba(255,255,255,0.3), transparent 13%), radial-gradient(circle at 14% 74%, rgba(200,225,255,0.32), transparent 14%), radial-gradient(circle at 58% 46%, rgba(120,175,120,0.24), transparent 8%), radial-gradient(circle at 34% 40%, rgba(120,175,120,0.18), transparent 7%), linear-gradient(150deg,#ecf5ff 0%,#a9caec 38%,#5a83b4 72%,#2b4a6c 100%)"
+            bg="url('/card-recovered.jpg')"
+            scrim="linear-gradient(180deg, rgba(8,15,26,0.55) 0%, rgba(8,15,26,0.46) 38%, rgba(8,15,26,0.78) 100%)"
             link="Try it live" to="/app/voice"
             sub={<><CountUp to={retriesSaved} dec={0} play={play} /> fewer wasted retries. Every rupee scored against a naive baseline.</>}>
             <div className="text-[30px] lg:text-[34px] font-semibold leading-[1.12] tracking-tight2">
@@ -2466,15 +2467,15 @@ function Statement({ lines }) {
     </div>
   );
 }
-function MCard({ label, bg, blur = 2, link, to, onClick, sub, children }) {
+function MCard({ label, bg, blur = 2, scrim, link, to, onClick, sub, children }) {
   const LinkEl = to ? Link : 'button';
   return (
     <div className="group relative overflow-hidden rounded-[20px] p-7 min-h-[440px] flex flex-col text-white transition-all duration-300 hover:-translate-y-1.5 shadow-[0_20px_50px_-24px_rgba(30,52,90,0.55)] hover:shadow-[0_38px_84px_-28px_rgba(30,52,90,0.7)]"
       style={{ border: '1px solid rgba(255,255,255,0.10)' }}>
-      {/* blurred image-like background */}
-      <div className="pointer-events-none absolute inset-[-10%] transition-transform duration-500 group-hover:scale-105" style={{ background: bg, filter: `blur(${blur}px)` }} />
+      {/* blurred image background */}
+      <div className="pointer-events-none absolute inset-[-10%] transition-transform duration-500 group-hover:scale-105" style={{ background: bg, backgroundSize: 'cover', backgroundPosition: 'center', filter: `blur(${blur}px)` }} />
       {/* dark scrim so the text stays fully legible */}
-      <div className="pointer-events-none absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(8,15,26,0.42) 0%, rgba(8,15,26,0.34) 45%, rgba(8,15,26,0.66) 100%)' }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background: scrim || 'linear-gradient(180deg, rgba(8,15,26,0.42) 0%, rgba(8,15,26,0.34) 45%, rgba(8,15,26,0.66) 100%)' }} />
       <div className="relative flex flex-col flex-1">
         <Pill>{label}</Pill>
         <div className="mt-auto pt-10" style={{ textShadow: '0 2px 14px rgba(0,0,0,0.4)' }}>{children}</div>
