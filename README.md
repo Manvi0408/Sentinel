@@ -34,9 +34,9 @@ audit trail."_ Sentinel demonstrates every part on screen:
 
 ## Design
 
-A clean **white console inspired by [Attio](https://attio.com)** — Inter type,
-1px hairline borders (`#ECECEC`), ~10px rounded corners, one restrained indigo
-accent, soft shadows, data-dense but airy tables. No auth, no dark theme.
+A clean **white console** — Inter type, 1px hairline borders (`#ECECEC`),
+~10px rounded corners, one restrained indigo accent, soft shadows, data-dense
+but airy tables.
 
 ---
 
