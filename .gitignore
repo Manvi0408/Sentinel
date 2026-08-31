@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+**/node_modules/
+
+# build output
+dist/
+build/
+**/dist/
+
+# secrets & local env (never commit real keys) — keep .env.example
+.env
+.env.local
+.env.*.local
+server/.env
+!**/.env.example
+
+# database (local sqlite)
+*.db
+*.db-journal
+server/prisma/dev.db
+server/prisma/dev.db-journal
+
+# logs / os / editor
+*.log
+.DS_Store
+.vscode/
+.idea/
+
+# tooling artifacts
+.claude/
+CLAUDE.md

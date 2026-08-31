@@ -1,0 +1,27 @@
+{
+  "name": "sentinel-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sentinel backend — recovery agent, Prisma/SQLite, Razorpay wrapper",
+  "scripts": {
+    "db:setup": "prisma generate && prisma db push",
+    "seed": "node src/seedRun.js",
+    "dev": "node src/index.js",
+    "start": "node src/index.js",
+    "test": "node src/tests/adversarial.js",
+    "test:concurrent-webhooks": "node src/tests/adversarial.js concurrent-webhooks",
+    "test:stale-reservation": "node src/tests/adversarial.js stale-reservation",
+    "test:duplicate-executor": "node src/tests/adversarial.js duplicate-executor"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "razorpay": "^2.9.5"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "sentinel",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sentinel — AI Revenue Recovery agent (Razorpay Hackathon Track 03)",
+  "scripts": {
+    "postinstall": "npm --prefix server install && npm --prefix client install",
+    "setup": "npm --prefix server run db:setup",
+    "seed": "npm --prefix server run seed",
+    "dev": "concurrently -n server,client -c blue,magenta \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "build": "npm --prefix client run build",
+    "start": "npm --prefix server start",
+    "serve": "npm run build && npm --prefix server start"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.4"
+  }
+}

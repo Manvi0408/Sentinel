@@ -1,0 +1,90 @@
+// Sentinel data model — SQLite via Prisma.
+// Three tables: payments (the at-risk batch), audit events (the immutable trail),
+// and settings (stopping rules + recovery-rate model constants, editable from the UI).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Payment {
+  id            String   @id
+  amount        Int      // amount at risk, in paise (Razorpay's unit)
+  customerName  String
+  customerEmail String
+  // --- Razorpay error schema (the exact fields Razorpay returns on a failed payment) ---
+  failureReason String   // Razorpay `reason`: insufficient_funds | card_expired | payment_timed_out | payment_risk_check_failed | mandate_afa_required
+  errorCode     String?  // Razorpay top-level `code`: BAD_REQUEST_ERROR | GATEWAY_ERROR | SERVER_ERROR
+  errorStep     String?  // Razorpay `step`: payment_initiation | payment_authentication | payment_authorization
+  createdAt     DateTime @default(now())
+
+  // --- Filled in by the agent's DIAGNOSE step ---
+  diagnosisClass  String? // Transient | Insufficient funds | Bad card | Mandate fail | Abandoned
+  confidence      Float?  // 0..1
+  diagnosisWhy    String? // short human-readable rationale
+  diagnosisSource String? // "gemini" or "rules"
+
+  // --- Filled in by DECIDE / EXECUTE ---
+  chosenAction    String?  // smart_retry | delayed_retry | update_card_link | represent_mandate | recovery_link | none
+  tier            String?  // auto_retry (silent) | whatsapp | voice
+  status          String   @default("at_risk") // at_risk | retrying | link_sent | recovered | stopped
+  retriesUsed     Int      @default(0) // SILENT auto-retries (do not count toward the contact cap)
+  contactAttempts Int      @default(0) // customer-facing contacts (WhatsApp + voice) — capped
+  messagesSent    Int      @default(0)
+  fraudFlagged    Boolean  @default(false) // no automated contact at all when true
+  lastActionAt    DateTime?
+  recoveredAmount Int      @default(0) // paise actually recovered (0 unless status == recovered)
+  recoveredVia    String?  // how it recovered: "razorpay_paid" (REAL test-mode link/webhook) | "modeled" (batch outcome vs baseline)
+  stopReason      String?  // why the agent stopped acting on this payment
+  recoveryMessage         String? // the generated customer-facing message (English)
+  recoveryMessageHinglish String? // Hinglish variant
+  paymentLinkUrl          String? // Razorpay payment link short_url (test mode) or simulated placeholder
+  rzpLinkId               String? // Razorpay payment-link id (plink_...) for status polling / webhooks
+  rzpLinkStatus           String? // created | paid (mirrors Razorpay link status)
+
+  events AuditEvent[]
+
+  @@index([status])
+}
+
+model AuditEvent {
+  id          Int      @id @default(autoincrement())
+  paymentId   String
+  ts          DateTime @default(now())
+  step        String   // ingest | diagnose | stopping_check | decide | execute | outcome
+  decision    String   // one-line description of the decision made
+  action      String?  // the action name if this event executed one
+  outcome     String?  // success | failure | skipped | link_created | stopped | null
+  retriesUsed Int      @default(0)
+  wave        Int      @default(0) // which recovery wave produced this event
+  detail      String?  // optional JSON string with extra context
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([ts])
+}
+
+model Setting {
+  key   String @id
+  value String // JSON-encoded value
+}
+
+// Idempotent execution reservations. The UNIQUE idempotencyKey is the lock:
+// exactly one caller creates the row (wins); concurrent duplicates hit the
+// unique constraint and read the cached reservation instead of re-executing.
+model RecoveryExecution {
+  id             String    @id @default(cuid())
+  paymentId      String
+  idempotencyKey String    @unique
+  status         String    @default("reserved") // reserved | executed | escalated
+  result         String? // JSON of the cached outcome
+  reservedAt     DateTime  @default(now())
+  executedAt     DateTime?
+
+  @@index([status])
+}
