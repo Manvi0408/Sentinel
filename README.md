@@ -1,34 +1,61 @@
-# Sentinel — AI Revenue Recovery
+<p align="center">
+  <img src="client/public/banner.jpg" alt="Sentinel — AI Revenue Recovery" width="900">
+</p>
 
-> **Razorpay Hackathon · Track 03 — AI Revenue Recovery**
-> _Find revenue slipping away and win it back._
+<h1 align="center">Sentinel — AI Revenue Recovery</h1>
 
-Sentinel is an agent that **detects payments at risk, diagnoses _why_ each one
-failed, chooses the single right recovery action, executes it against Razorpay
-test-mode APIs (or a clearly-labelled simulator), enforces stopping rules, and
-shows the money it actually recovered across a whole batch** — with a full,
-exportable audit trail and an honest comparison against a naive
-"retry-everything" baseline.
-
-It targets the **"Payment degradation → root cause → recovery action"** and
-**"Failed-subscription recovery"** directions.
+<p align="center">
+  <em>Razorpay Hackathon · Track 03 &nbsp;·&nbsp; micro1 Frontier Engineering Challenge</em><br/>
+  <em>Catch revenue before it's gone. Win it back — automatically, and safely.</em>
+</p>
 
 ---
 
-## What it proves (the track's bar)
+**Sentinel is an AI agent that recovers revenue lost to failed payments — it detects a failure, diagnoses the _real_ reason, chooses one bounded recovery action, and executes it, with a deterministic policy engine enforcing every boundary and an immutable audit trail recording every step.**
 
-The track asks: _"Don't just identify the problem. Show measured money
-recovered across a batch, with compliant escalation, stopping rules, and an
-audit trail."_ Sentinel demonstrates every part on screen:
+## <u>Problem & user value</u>
 
-| Requirement | Where you see it |
+Indian subscription/D2C founders and finance teams lose a continuous stream of revenue to **involuntary churn** — payments that fail on insufficient funds, expired cards, gateway timeouts, and the RBI **>₹15,000 e-mandate (AFA)** wall. Today they rely on their processor's blind "retry every 24h" logic and a human manually chasing CSV exports. That wastes money (retrying dead cards, gateway fees), annoys good customers, and still leaks recoverable revenue. **The user is the founder/RevOps lead who wants failed payments won back automatically and safely — without a human in the loop for every case.**
+
+## <u>The agent — solution & engineering</u>
+
+The solution is an **agent, not a prompt**. For each failed payment it runs: **Detect → Diagnose → Decide → Policy-check → Execute → Verify+Log.**
+
+- **Diagnosis** is done by an LLM (Claude → Gemini fallback) over the **verbatim Razorpay `code / step / reason`**, returning strict JSON `{class, confidence, why, action, message}`. A **deterministic rules engine** is the always-on fallback, so it works offline and never crashes.
+- **The key design choice: the AI only diagnoses — it has no execution power.** A code-defined **policy engine** enforces the boundaries before anything fires: max 3 retries, max 3 contacts, never touch fraud-flagged/paid cases, TRAI 9am–9pm calling window. This is what makes an autonomous money-moving agent *safe*.
+- **12 real tools** (create Razorpay test link, WhatsApp, call, retry, promise-to-pay, escalate…), with **idempotent execution** (a unique-key reservation lock) proven under concurrency (`concurrent-webhooks`, `stale-reservation`, `duplicate-executor` tests) so duplicate webhooks can't double-charge.
+
+## <u>Baseline vs. advanced (measured improvement)</u>
+
+- **Baseline:** naive "retry-everything" (blind 24h retries, no diagnosis, no links) → **50.4%** recovery.
+- **Advanced (Sentinel):** LLM diagnosis + policy engine + bounded actions → **66.4%** recovery, **₹3.75L recovered**, **+₹90,505 vs baseline**, **123 fewer wasted retries**, **100% of fraud cases safely blocked**, on a **67-case** batch. (~+16pp, ~+32% relative.)
+- One concrete win of the advanced over rules-only: on an unseen reason `transaction_amount_exceeds_limit`, rules-only **blind-retries** (wrong); the LLM reads it and picks **update-card link** (no retry). Rules = safe floor, LLM = generalises to the long tail — both bounded by the same policy engine.
+
+## <u>Results</u>
+
+| Metric | Result |
 | --- | --- |
-| **Measured money recovered across a BATCH** | Overview hero + `Run recovery on batch` runs the whole ~60-payment batch and reports `₹ recovered / recovery-rate %`. |
-| **Compliant escalation (no spam)** | Stopping rules cap messages per customer and retries per payment; blocks are logged. |
-| **Stopping rules** | Rules page — editable; enforced before **every** action. |
-| **Full audit trail** | Audit page — every decision/action timestamped, **exportable as CSV**. |
-| **Honest metrics incl. false-positive cost** | Overview KPI "False-positive cost", priced from wasted messages + retries. |
-| **Comparison vs "retry everything"** | Overview "Sentinel vs retry-everything baseline" bars + deltas. |
+| Recovery Rate | **66.4%** |
+| Money Recovered | **₹3.75L** |
+| Improvement vs Baseline | **+₹90,505** |
+| Wasted Retries Prevented | **123** |
+| Fraud Cases Safely Blocked | **100%** |
+| Cases Evaluated | **67** |
+
+**Measured on a batch of failed payments using Razorpay failure schemas.**
+
+## <u>End-to-end quality</u>
+
+It's a working full-stack app (React + Node/Express + SQLite/Prisma), not slideware. It runs **live Razorpay test-mode recoveries**: the agent creates a **real `rzp.io` test payment link**, and when the test checkout is paid, a webhook flips the case to **Recovered for real**. Outcomes are **honestly labelled "real vs modeled"** — the dashboard shows the split so nothing modeled is passed off as real.
+
+## <u>Reproducibility</u>
+
+Clean-environment path in `QUICKSTART.md`: `git clone → npm install → cp server/.env.example server/.env → npm run setup → npm run seed → npm run dev` (opens `localhost:4100`). To reproduce the headline result: **Re-seed → Run recovery on batch**, then read `/api/metrics` (baseline and advanced are computed from the same constants, so the comparison is fair). Docs: `ARCHITECTURE.md`, `API.md`, `EVALUATION.md`.
+
+## <u>Biggest failure mode & hot take</u>
+
+**Failure mode:** the agent's most dangerous instinct was *over-trusting the model* — on quota loss or a never-seen reason it would default to a blind retry, wasting money and spamming customers.
+**Hot take:** *the reliability of an agent comes from what it's **not** allowed to do.* Put the LLM behind a deterministic policy engine (model diagnoses, code enforces), make execution idempotent, and **label real vs. modeled outcomes** so you never fool yourself. That's the difference between a demo and something you'd trust with money.
 
 ---
 
