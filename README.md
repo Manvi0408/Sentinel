@@ -9,7 +9,28 @@
   <em>Catch revenue before it's gone. Win it back — automatically, and safely.</em>
 </p>
 
+<p align="center">
+  <a href="https://sentinel-gamma-one.vercel.app"><b>Live demo</b></a> ·
+  <a href="https://sentinel-gamma-one.vercel.app/app/overview">Console</a> ·
+  <a href="https://sentinel-gamma-one.vercel.app/docs">API docs</a> ·
+  <a href="ARCHITECTURE.md">Architecture</a> ·
+  <a href="EVALUATION.md">Evaluation</a>
+</p>
+
+<p align="center">
+  <img alt="React" src="https://img.shields.io/badge/React-18-1f6feb?logo=react&logoColor=white">
+  <img alt="Node.js" src="https://img.shields.io/badge/Node.js-18%2B-3c873a?logo=node.js&logoColor=white">
+  <img alt="Express" src="https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white">
+  <img alt="Prisma" src="https://img.shields.io/badge/Prisma-SQLite-2d3748?logo=prisma&logoColor=white">
+  <img alt="Razorpay" src="https://img.shields.io/badge/Razorpay-test%20mode-0b7bff?logo=razorpay&logoColor=white">
+  <img alt="AI" src="https://img.shields.io/badge/AI-Claude%20%E2%86%92%20Gemini%20%E2%86%92%20Rules-8a63d2">
+  <img alt="License" src="https://img.shields.io/badge/License-MIT-green">
+</p>
+
 ---
+
+> **Try it in 30 seconds:** open the [live demo](https://sentinel-gamma-one.vercel.app) → **Open console** → **Run recovery on batch**.
+> _(The API is on a free tier — the first request after it's been idle takes ~30–50s to wake, then it's instant.)_
 
 **Sentinel is an AI agent that recovers revenue lost to failed payments — it detects a failure, diagnoses the _real_ reason, chooses one bounded recovery action, and executes it, with a deterministic policy engine enforcing every boundary and an immutable audit trail recording every step.**
 
