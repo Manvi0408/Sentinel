@@ -74,6 +74,28 @@ the same policy engine.
 
 ---
 
+## Cost & latency management
+
+At Razorpay scale a heavy LLM prompt on *every* failed payment is expensive and slow, so
+the reasoning layer is tiered cheapest-first:
+
+1. **Startup probe, not per-call** — `aiEngine.js` probes the LLM **once** at boot and
+   caches the working engine. A dead key or exhausted quota is discovered once, not on
+   each of ~60 payments, so a broken key never adds latency to the batch.
+2. **Rules-first cost gate (`LLM_GATE=exact`)** — an **unambiguous** failure (one that
+   matched a known Razorpay `reason` verbatim — see `classifySource` in `config.js`) is
+   diagnosed by the **zero-cost, sub-millisecond rules engine** and **never touches the
+   LLM**. Only the ambiguous long tail (keyword/heuristic matches, never-seen reasons)
+   spends an LLM call — exactly the cases where the model earns its cost.
+3. **Rules as the free fallback** — if the LLM is absent, over quota, or errors, the rules
+   engine answers for free. The system degrades in cost, never in availability.
+
+The gate is **opt-in** (default off) so the full-batch demo still shows the LLM diagnosing
+every case; flip `LLM_GATE=exact` in `server/.env` to see the production cost profile,
+where the LLM fires only on the ambiguous minority.
+
+---
+
 ## Policy engine (the guardrail)
 
 The AI only *diagnoses* — it has no autonomous execution power. A code-defined policy
@@ -115,8 +137,55 @@ catch-all (`server/src/config.js` → `normalizeRazorpayReason`).
 `get_recovery_history` · `create_payment_link` · `send_whatsapp` · `place_call` ·
 `retry_payment` · `record_promise_to_pay` · `stop_recovery` · `escalate_to_human`
 
-Execution is **idempotent** — a unique-key reservation lock (`server/src/agent/guard.js`)
-so duplicate / concurrent webhooks can't double-execute.
+---
+
+## Razorpay API integration
+
+**What runs today (test mode).** The executor (`server/src/agent/execute.js`) instantiates
+the official `razorpay` SDK only when `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` are present,
+and calls the **Payment Links API** — `paymentLink.create(...)` — to mint a **real
+`rzp.io` test-mode link** for card-update / recovery / delayed-retry actions. Inbound
+`payment_link.paid` / `payment.captured` webhooks are **HMAC-SHA256 signature-verified**
+against `RAZORPAY_WEBHOOK_SECRET` over the raw request body — and routed through the same
+`runOnce` idempotency lock — before a case is flipped to Recovered.
+No keys → the same actions run in clearly-labelled **simulated** mode; no code path ever
+moves real money.
+
+**Production API mapping (how each action maps to a specific Razorpay product).** The
+bounded action set is deliberately 1:1 with a Razorpay capability, so the same agent wires
+onto production APIs without changing its decision logic:
+
+| Diagnosis → action | Razorpay API in production |
+|---|---|
+| Gateway timeout → smart retry | **Smart Optimizer / intelligent routing** to re-route the retry via a healthier gateway |
+| Card expired → update-card link | **Payment Links** + **Tokenisation** to re-collect on a fresh instrument |
+| Insufficient funds → delayed retry + link | **Orders / Payment Links**, retried near payday |
+| Mandate AFA (>₹15k) → re-present mandate | **Recurring / e-mandate** re-presentment + AFA authentication link |
+| Fraud risk → stop & escalate | no charge API is called — the case is blocked and escalated |
+
+Only the test-mode Payment Links path is wired in this build; the rest of the column is the
+production integration each bounded action is designed to plug into.
+
+---
+
+## Idempotency & exactly-once execution
+
+Firing the same retry twice can **double-charge a customer**, so every money action goes
+through a unique-key reservation lock (`server/src/agent/guard.js`):
+
+- **The lock is the database.** A `UNIQUE` constraint on `RecoveryExecution.idempotencyKey`
+  means exactly one caller can create the row for a given key; every concurrent duplicate
+  hits the constraint and **reads the already-reserved result instead of executing again**.
+- **`runOnce(key, paymentId, fn)`** — wins the lock → runs the tool once → caches the
+  result; loses the lock → returns the cached result **without firing**. So even if the AI
+  loops, a webhook is redelivered, or a process crashes and retries, the customer is
+  charged **at most once**.
+- **Crash safety.** A reservation left `reserved` past `STALE_MS` (a process that died
+  mid-action) is swept and degraded to `STOP_AND_ESCALATE` rather than hanging or silently
+  re-firing.
+- **Proven under concurrency.** `server/src/tests/adversarial.js` exercises
+  `concurrent-webhooks`, `duplicate-executor`, and `stale-reservation` and asserts
+  exactly-once (`npm --prefix server test`).
 
 ---
 

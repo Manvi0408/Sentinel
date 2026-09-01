@@ -112,6 +112,16 @@ export function normalizeRazorpayReason({ code, step, reason } = {}) {
   return 'payment_timed_out'; // conservative default: a bounded silent retry
 }
 
+// How confidently a reason was classified — 'exact' when it matched a known
+// Razorpay reason verbatim (or our synthetic schema), 'heuristic' when it only
+// matched by keyword/step/code fallback. The cost gate (LLM_GATE) uses this to
+// skip the LLM on unambiguous cases and reserve it for the ambiguous long tail.
+export function classifySource({ code, step, reason } = {}) {
+  const r = String(reason || '').toLowerCase().trim();
+  if (REASON_SCHEMA[r] || REASON_LOOKUP[r]) return 'exact';
+  return 'heuristic';
+}
+
 // Human-readable labels for each Razorpay reason (used where a friendly name is shown).
 export const FAILURE_REASONS = {
   insufficient_funds: 'Insufficient funds',
