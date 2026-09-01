@@ -230,7 +230,7 @@ SENTINEL/
 ├── server/       # Node + Express API, agent, tests
 │   ├── prisma/   # SQLite schema
 │   └── src/      # agent, config, seed, index, tests
-└── *.md          # QUICKSTART · ARCHITECTURE · API · EVALUATION · CHANGELOG
+└── *.md          # QUICKSTART · DEPLOY · ARCHITECTURE · API · EVALUATION
 ```
 
 ---

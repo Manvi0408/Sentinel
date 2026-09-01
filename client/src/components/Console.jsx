@@ -110,6 +110,7 @@ export default function Console() {
   const [mode, setMode] = useState({ razorpay: 'simulated', gemini: 'rules-fallback' });
   const [q, setQ] = useState('');
   const [connOpen, setConnOpen] = useState(false);
+  const connRef = useRef(null);
   const [testOpen, setTestOpen] = useState(false);
   // Testing-Layer sandbox: open state + global analytics the sandbox feeds into.
   const [isSandboxOpen, setIsSandboxOpen] = useState(false);
@@ -270,9 +271,19 @@ export default function Console() {
 
             {/* Connections — collapsible, reveals the integrations inside */}
             {(match('Connections') || INTEGRATIONS_NAV.some((it) => match(it.label))) && (
-              <div className="mt-4">
+              <div className="mt-4" ref={connRef}>
                 <button
-                  onClick={() => setConnOpen((o) => !o)}
+                  onClick={() =>
+                    setConnOpen((o) => {
+                      const next = !o;
+                      if (next)
+                        setTimeout(
+                          () => connRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }),
+                          60,
+                        );
+                      return next;
+                    })
+                  }
                   className="nav-item justify-start w-full"
                 >
                   <IconPlug size={16} />
