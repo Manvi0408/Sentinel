@@ -69,6 +69,33 @@ flowchart LR
   R -.-> D
 ```
 
+### Recovery Decision
+
+Each failure is diagnosed into a class, mapped to one bounded action, and only executed if the policy engine allows it.
+
+```mermaid
+flowchart LR
+  A[Failed Payment] --> B[Diagnose Failure]
+
+  B --> C1[Insufficient Funds]
+  B --> C2[Card Expired]
+  B --> C3[Gateway Timeout]
+  B --> C4[Fraud Risk]
+
+  C1 --> D1[Delayed Retry]
+  C2 --> D2[Update Card Link]
+  C3 --> D3[Smart Retry]
+  C4 --> D4[Block &amp; Escalate]
+
+  D1 --> E[Policy Engine]
+  D2 --> E
+  D3 --> E
+  D4 --> E
+
+  E --> F[Recovered]
+  E --> G[Stopped]
+```
+
 ---
 
 ## How Sentinel Works
