@@ -118,7 +118,7 @@ flowchart LR
   C1 --> D1[Delayed Retry]
   C2 --> D2[Update Card Link]
   C3 --> D3[Smart Retry]
-  C4 --> D4[Block &amp; Escalate]
+  C4 --> D4[Block and Escalate]
 
   D1 --> E[Policy Engine]
   D2 --> E
@@ -135,7 +135,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-  A[Detect] --> B[Diagnose] --> C[Decide] --> P[Policy Check] --> E[Execute] --> V[Verify &amp; Audit]
+  A[Detect] --> B[Diagnose] --> C[Decide] --> P[Policy Check] --> E[Execute] --> V[Verify and Audit]
 ```
 
 - The **AI diagnoses**.
