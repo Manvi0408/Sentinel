@@ -219,11 +219,11 @@ function Showcase() {
           at the SAME bottom line (bottom-anchored, bleeding off).
           Tops form a symmetric pyramid: Case peaks, Live & Recovery one step down,
           Revenue & Activity lowest. A soft fade dissolves the card bottoms. */}
-      <div className="relative lg:h-[590px] lg:overflow-hidden">
+      <div className="relative lg:h-[560px] lg:overflow-hidden lg:flex lg:justify-center">
         {/* Overlapping z-fan (no gaps): Case/Invoice is in FRONT; each neighbour
             tucks behind the more-central card, so the grey glass-frame edge peeks
             where one card slides under the next. */}
-        <div className="px-6 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-center lg:gap-0 lg:w-max lg:mx-auto lg:scale-[0.86] lg:origin-top">
+        <div className="px-6 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-center lg:gap-0 lg:w-max lg:scale-[0.8] lg:origin-top">
           {/* 1 · Revenue at Risk — lowest level, behind col 2 (enters last) */}
           <div className="w-full lg:w-[312px] lg:mt-[236px] lg:h-[440px] lg:overflow-hidden relative z-10 card-in" style={{ animationDelay: '420ms' }}>
             <RevenueAtRisk />
