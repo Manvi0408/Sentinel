@@ -47,6 +47,18 @@
 
 _Measured against a naive retry-everything baseline._
 
+> **On reproducibility:** these figures come from one seeded batch and **shift on each
+> re-seed** (the batch is regenerated). Reproduce any time with **Re-seed → Run recovery on
+> batch**, then read `/api/metrics`. The live demo may show slightly different numbers than
+> the table above for exactly this reason — baseline and Sentinel are always computed from
+> the **same** constants, so the comparison stays fair.
+
+<p align="center">
+  <img src="client/public/dashboard.jpg" alt="Sentinel console — recovery KPIs, risk-by-source, top workflows, recent recoveries" width="960">
+</p>
+
+<p align="center"><em>The live console — money recovered, recovery rate vs baseline, net benefit, and every recovery it made.</em></p>
+
 ---
 
 ## The Problem
@@ -147,9 +159,9 @@ Sentinel separates diagnosis from execution. The LLM decides what happened; the 
 - Node.js + Express Backend
 - SQLite + Prisma
 - Claude → Gemini → Rules Fallback
-- Razorpay Integration
-- Twilio Voice
-- WhatsApp Recovery
+- Razorpay Integration (test mode — real test-mode payment links)
+- Twilio Voice _(test-mode / simulated when keys absent)_
+- WhatsApp Recovery _(test-mode / simulated when keys absent)_
 - Audit Layer
 
 ---
