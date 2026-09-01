@@ -87,6 +87,8 @@ flowchart TD
 
 ## System Architecture
 
+Sentinel separates diagnosis from execution. The LLM decides what happened; the policy engine decides what is allowed; tools execute only approved actions.
+
 <p align="center">
   <img src="client/public/architecture.jpg" alt="Sentinel system architecture — Detect, Diagnose &amp; Decide, Execute, Observe &amp; Learn" width="960">
 </p>
