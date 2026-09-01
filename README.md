@@ -5,7 +5,7 @@
 <h1 align="center">Sentinel — AI Revenue Recovery</h1>
 
 <p align="center">
-  <em>Razorpay Hackathon · Track 03 &nbsp;·&nbsp; micro1 Frontier Engineering Challenge</em><br/>
+  <em>Razorpay Hackathon · Track 03 — AI Revenue Recovery</em><br/>
   <em>Catch revenue before it's gone. Win it back — automatically, and safely.</em>
 </p>
 
@@ -56,14 +56,6 @@ Clean-environment path in `QUICKSTART.md`: `git clone → npm install → cp ser
 
 **Failure mode:** the agent's most dangerous instinct was *over-trusting the model* — on quota loss or a never-seen reason it would default to a blind retry, wasting money and spamming customers.
 **Hot take:** *the reliability of an agent comes from what it's **not** allowed to do.* Put the LLM behind a deterministic policy engine (model diagnoses, code enforces), make execution idempotent, and **label real vs. modeled outcomes** so you never fool yourself. That's the difference between a demo and something you'd trust with money.
-
----
-
-## Design
-
-A clean **white console** — Inter type, 1px hairline borders (`#ECECEC`),
-~10px rounded corners, one restrained indigo accent, soft shadows, data-dense
-but airy tables.
 
 ---
 
@@ -150,6 +142,31 @@ INGEST → DIAGNOSE → DECIDE → STOPPING RULES → EXECUTE → MEASURE + LOG
 Recovery runs in **waves**. Each wave advances a virtual clock by the cooldown,
 so every action on a payment is at least `cooldownHours` after its previous one
 — the cooldown is real and visible in each payment's timeline.
+
+---
+
+## System Architecture
+
+<p align="center">
+  <img src="client/public/architecture.jpg" alt="Sentinel system architecture — Detect, Diagnose &amp; Decide, Execute, Observe &amp; Learn" width="960">
+</p>
+
+The system runs as four stages end-to-end:
+
+1. **Detect** — Razorpay webhooks, payment logs, subscriptions and invoices feed a
+   risk-detection engine that queues at-risk payments and a context builder assembles
+   the full case (customer history, attempts, device, plan).
+2. **Diagnose & Decide** — a diagnosis agent (LLM → rules fallback) classifies the
+   failure and a decision engine picks **one** action from a bounded set; the
+   **stopping-rules guardrail** allows or suppresses it (max messages/retries, quiet
+   hours, do-not-contact, risk limits) before anything fires.
+3. **Execute** — the action executor drives the real Razorpay/channel integrations, the
+   customer interaction is tracked, and the outcome tracker updates recovery impact.
+4. **Observe & Learn** — every decision, action and outcome is written to an immutable
+   audit trail, exported to reports, and fed back to improve diagnosis and decisions.
+
+_Security & compliance: PII encrypted in transit and at rest, keys backend-only,
+immutable audit logs, RBAC for access._
 
 ---
 
