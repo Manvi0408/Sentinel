@@ -256,6 +256,7 @@ Razorpay test links.
 ## Documentation
 
 - [`QUICKSTART.md`](QUICKSTART.md)
+- [`DEPLOY.md`](DEPLOY.md) — split backend/frontend deploy (Render + Vercel)
 - [`ARCHITECTURE.md`](ARCHITECTURE.md)
 - [`API.md`](API.md)
 - [`EVALUATION.md`](EVALUATION.md)

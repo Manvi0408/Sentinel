@@ -1,0 +1,28 @@
+# Render blueprint for the Sentinel BACKEND (API).
+# Deploy: Render Dashboard → New → Blueprint → pick this repo. Render reads this file.
+# The frontend is deployed separately (see DEPLOY.md / client on Vercel).
+services:
+  - type: web
+    name: sentinel-api
+    runtime: node
+    plan: free
+    rootDir: server
+    # generate Prisma client, create the SQLite DB, seed a synthetic batch
+    buildCommand: npm install && npm run db:setup && npm run seed
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # PORT is injected by Render automatically — do NOT set it here.
+      # Add your own keys in the dashboard (marked sync:false = you fill them in):
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET   # add after you configure the webhook post-deploy
+        sync: false
