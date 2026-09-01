@@ -17,15 +17,18 @@ export default function Simulate() {
   const [log, setLog] = useState([]);
   const [busy, setBusy] = useState(false);
 
+  const [err, setErr] = useState('');
+
   const fire = async (e) => {
     setBusy(true);
+    setErr('');
     try {
       const r = await api.simulateEvent({ type: e.type, reason: e.reason, amount: e.amount });
       const d = r.detected;
       setLog((l) => [{ id: d.id, ts: new Date(), event: e.type, label: e.label, ...d }, ...l].slice(0, 20));
       refresh(); // the new at-risk case flows into the queue + dashboard
     } catch {
-      /* ignore */
+      setErr("Couldn't reach the recovery engine. If the backend was idle it may still be waking — try once more in a few seconds.");
     } finally {
       setBusy(false);
     }
@@ -69,7 +72,17 @@ export default function Simulate() {
             <span className="ml-auto text-[12px] text-faint">{log.length} events this session</span>
           </div>
 
-          {log.length === 0 ? (
+          {busy && (
+            <div className="mb-3 flex items-center gap-2.5 rounded-[12px] border border-hairline bg-canvas px-3.5 py-3">
+              <span className="w-4 h-4 rounded-full border-2 border-accent/30 border-t-accent animate-spin" />
+              <span className="text-[12.5px] text-muted">Firing event → waking the recovery engine… <span className="text-faint">(first call after idle can take up to a minute)</span></span>
+            </div>
+          )}
+          {err && !busy && (
+            <div className="mb-3 rounded-[12px] border border-stop/20 bg-stop-soft px-3.5 py-3 text-[12.5px] text-stop">{err}</div>
+          )}
+
+          {log.length === 0 && !busy ? (
             <div className="grid place-items-center py-20 text-center">
               <div>
                 <div className="text-[13px] text-muted">No events yet.</div>
