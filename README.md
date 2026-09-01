@@ -241,6 +241,34 @@ flowchart LR
 
 Dashboard metrics update automatically.
 
+### See it for yourself — a real link Sentinel generated
+
+This is an **actual** payment link Sentinel created by calling Razorpay's Payment Links API
+for a failed **₹32,000** charge (customer _Vivaan Rao_):
+
+> 💳 **[Click here to open the real Razorpay test checkout →](https://rzp.io/rzp/8wQFk0YK)**
+
+It opens Razorpay's **test-mode** hosted checkout (`razorpay.com/payment-link/…/test`) — this
+is exactly what the customer receives. **No real money moves.** Pay it with any Razorpay
+[test card](https://razorpay.com/docs/payments/payments/test-card-details/) (e.g.
+`4111 1111 1111 1111`, any future expiry, any CVV) and — with the webhook configured — the
+case flips to **Recovered** on its own.
+
+Under the hood, the agent's `create_payment_link` tool returned:
+
+```json
+{
+  "tool": "create_payment_link",
+  "result": {
+    "url": "https://rzp.io/rzp/8wQFk0YK",
+    "id": "plink_TWo99whbvLuZkB",
+    "live": true
+  }
+}
+```
+
+`"live": true` means it's a real Razorpay test-mode link (not a simulated placeholder).
+
 ---
 
 ## Repository Structure
