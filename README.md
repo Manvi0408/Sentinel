@@ -5,7 +5,6 @@
 <h1 align="center">Sentinel — AI Revenue Recovery</h1>
 
 <p align="center">
-  <em>Razorpay Hackathon · Track 03 — AI Revenue Recovery</em><br/>
   <em>Catch revenue before it's gone. Win it back — automatically, and safely.</em>
 </p>
 
