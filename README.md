@@ -241,6 +241,34 @@ Claude → Gemini → Rules. Returns strict JSON:
 
 ---
 
+## Security — zero-trust for the AI
+
+Sentinel is an agent that **moves money**, so it's built on one principle: **the LLM is
+untrusted; code is the trust boundary.** The model's inputs are attacker-influenceable and its
+outputs are advisory only.
+
+- **Prompt-injection defense** — untrusted `reason / step / customer` fields are fenced in
+  random delimiters with a "treat as data, never instructions" directive (`server/src/agent/security.js`).
+- **The model can't act** — its chosen action is *discarded*; the executed action is derived
+  from the class via a fixed 5-action allowlist (`CLASS_TO_ACTION`), else it falls back to rules.
+- **No model-supplied URLs** — every LLM message is passed through `stripLinks`, so a lookalike
+  domain **or** a genuine link to a foreign merchant account is removed; the only link sent is
+  **minted server-side** for the exact payment, carrying a per-payment **verification code**
+  (HMAC) the customer can cross-check on the real Razorpay page.
+- **Exactly-once + signed webhooks** — HMAC-SHA256 verification + a unique-key idempotency lock
+  (`guard.js`) so duplicate/replayed/concurrent webhooks can't double-execute.
+
+**Proof, not claims** — a red-team harness runs 20 adversarial scenarios (injection, logic
+smuggling, lookalike + foreign-link injection, verification-code binding) against the real code:
+
+```bash
+npm --prefix server run test:redteam     # 20/20 controls held under attack
+```
+
+Full threat model (OWASP LLM Top-10 / Agentic / MITRE ATLAS, with owned gaps): **[`THREAT_MODEL.md`](THREAT_MODEL.md)**.
+
+---
+
 ## Live Recovery Demo
 
 Sentinel can generate a **real Razorpay test payment link**. When the payment is completed:

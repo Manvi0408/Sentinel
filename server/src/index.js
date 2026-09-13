@@ -448,3 +448,27 @@ app.listen(PORT, () => {
   console.log(`  Razorpay: ${process.env.RAZORPAY_KEY_ID ? 'live-test keys' : 'SIMULATED mode'}`);
   console.log(`  Gemini:   ${process.env.GEMINI_API_KEY ? 'enabled' : 'rules fallback'}\n`);
 });
+
+// Self-heal on cold start: on Render's ephemeral free tier a fresh container can
+// boot with an empty/unrun DB. If nothing has been recovered yet, seed (if empty)
+// and run the batch in the background so visitors never see ₹0. Disable with
+// AUTO_RUN_ON_BOOT=false.
+if (process.env.AUTO_RUN_ON_BOOT !== 'false') {
+  (async () => {
+    try {
+      const recovered = await prisma.payment.count({ where: { status: 'recovered' } });
+      if (recovered > 0) return; // snapshot already has data — nothing to do
+      const total = await prisma.payment.count();
+      if (total === 0) {
+        const out = await seedBatch(60);
+        console.log(`  [boot] seeded ${out.count} payments`);
+      }
+      console.log(`  [boot] no recoveries found — running batch…`);
+      await runBatch();
+      const now = await prisma.payment.count({ where: { status: 'recovered' } });
+      console.log(`  [boot] batch complete — ${now} recovered`);
+    } catch (e) {
+      console.log(`  [boot] auto-run skipped: ${e.message || e}`);
+    }
+  })();
+}

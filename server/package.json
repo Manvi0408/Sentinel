@@ -7,9 +7,11 @@
   "scripts": {
     "db:setup": "prisma generate && prisma db push",
     "seed": "node src/seedRun.js",
+    "seed:run": "node src/runBatchCli.js",
     "dev": "node src/index.js",
     "start": "node src/index.js",
     "test": "node src/tests/adversarial.js",
+    "test:redteam": "node src/tests/redteam.js",
     "test:concurrent-webhooks": "node src/tests/adversarial.js concurrent-webhooks",
     "test:stale-reservation": "node src/tests/adversarial.js stale-reservation",
     "test:duplicate-executor": "node src/tests/adversarial.js duplicate-executor"

@@ -7,8 +7,10 @@ services:
     runtime: node
     plan: free
     rootDir: server
-    # generate Prisma client, create the SQLite DB, seed a synthetic batch
-    buildCommand: npm install && npm run db:setup && npm run seed
+    # generate Prisma client, create the SQLite DB, seed a batch, AND run the
+    # recovery agent so the deployed snapshot ships with recovered data (Render's
+    # free tier reverts to this snapshot on every cold start).
+    buildCommand: npm install && npm run db:setup && npm run seed && npm run seed:run
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:

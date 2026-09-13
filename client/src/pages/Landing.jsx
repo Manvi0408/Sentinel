@@ -51,6 +51,7 @@ const NAV = [
   { label: 'Agentic Recovery', to: 'agentic-recovery' },
   { label: "Why it's safe", to: 'why-its-safe' },
   { label: 'API docs', to: '/docs' },
+  { label: 'Security', to: '/security' },
 ];
 function scrollToId(id) {
   if (id === 'top') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }

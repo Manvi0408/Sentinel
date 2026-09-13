@@ -18,12 +18,14 @@ import Simulator from './pages/Simulator.jsx';
 import Simulate from './pages/Simulate.jsx';
 import Case from './pages/Case.jsx';
 import ApiDocs from './pages/ApiDocs.jsx';
+import Security from './pages/Security.jsx';
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/docs" element={<ApiDocs />} />
+      <Route path="/security" element={<Security />} />
       <Route path="/app" element={<Console />}>
         <Route index element={<Navigate to="/app/overview" replace />} />
         <Route path="overview" element={<Overview />} />

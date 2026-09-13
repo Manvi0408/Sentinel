@@ -7,6 +7,7 @@
 // This keeps the AI in the loop without ever making the app depend on it.
 
 import { CLASSES, CLASS_TO_ACTION, FAILURE_REASONS } from '../config.js';
+import { wrapUntrusted, untrustedNotice, sanitizeLlmMessage } from './security.js';
 
 const MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 
@@ -21,19 +22,21 @@ function buildPrompt(payment) {
   return `You are Sentinel, a revenue-recovery agent for the Indian merchant "Acme Store".
 A payment failed. Classify it, choose ONE bounded recovery action, and write two short customer messages.
 
+${untrustedNotice()}
+
 Payment:
 - amount: ${amt}
-- customer: ${payment.customerName}
-- Razorpay error code: ${payment.errorCode || 'n/a'}
-- Razorpay failed step: ${payment.errorStep || 'n/a'}
-- Razorpay error reason: ${payment.failureReason} (${FAILURE_REASONS[payment.failureReason] || 'interpret from the reason/code/step above'})
+- ${wrapUntrusted('customer', payment.customerName)}
+- ${wrapUntrusted('Razorpay error code', payment.errorCode || 'n/a')}
+- ${wrapUntrusted('Razorpay failed step', payment.errorStep || 'n/a')}
+- ${wrapUntrusted('Razorpay error reason', payment.failureReason)} (${FAILURE_REASONS[payment.failureReason] || 'interpret from the reason/code/step above'})
 
 Rules:
 - class must be one of: ${CLASSES.join(', ')}
 - action must be one of: smart_retry (transient/gateway), delayed_retry (insufficient funds), update_card_link (expired/bad card — NEVER retry), represent_mandate (mandate failure), recovery_link (abandoned checkout)
 - Choose the action that matches the class. Bad/expired cards must use update_card_link, never a retry.
 - confidence is 0..1.
-- messages: warm, concise, one or two sentences. English + a natural Hinglish (Roman-script Hindi) version.
+- messages: warm, concise, one or two sentences. English + a natural Hinglish (Roman-script Hindi) version. Do NOT include any link or URL — the system inserts the secure link.
 
 Respond with ONLY a JSON object, no markdown:
 {"class":"...","confidence":0.0,"why":"one sentence","action":"...","message":"...","messageHinglish":"..."}`;
@@ -111,8 +114,9 @@ export async function geminiAnalyze(payment) {
       confidence: Math.max(0, Math.min(1, Number(parsed.confidence) || 0.7)),
       why: String(parsed.why || '').slice(0, 400),
       action,
-      message: String(parsed.message || '').slice(0, 600),
-      messageHinglish: String(parsed.messageHinglish || '').slice(0, 600),
+      // Strip any URL the model emitted — the trusted minted link is inserted by code.
+      message: sanitizeLlmMessage(String(parsed.message || '').slice(0, 600)),
+      messageHinglish: sanitizeLlmMessage(String(parsed.messageHinglish || '').slice(0, 600)),
       source: 'gemini',
     };
   } catch {

@@ -12,6 +12,7 @@
 
 import Razorpay from 'razorpay';
 import { RETRY_ACTIONS, MESSAGE_ACTIONS } from '../config.js';
+import { verificationCode } from './security.js';
 
 let razorpayClient = null;
 export function razorpayMode() {
@@ -34,24 +35,27 @@ export function getClient() {
 // a clearly-simulated placeholder URL.
 export async function createPaymentLink(payment) {
   const client = getClient();
+  // Verification code bound to THIS payment — rendered on the real Razorpay page
+  // (via description/notes) so a customer can cross-check the link out-of-band.
+  const code = verificationCode(payment.id);
   if (client) {
     try {
       const link = await client.paymentLink.create({
         amount: payment.amount,
         currency: 'INR',
         accept_partial: false,
-        description: `Acme Store — recover payment ${payment.id}`,
+        description: `Acme Store — recover payment ${payment.id} · verify code: ${code}`,
         customer: { name: payment.customerName, email: payment.customerEmail },
         notify: { sms: false, email: false }, // we don't actually notify synthetic customers
         reminder_enable: false,
-        notes: { sentinel: 'true', paymentId: payment.id },
+        notes: { sentinel: 'true', paymentId: payment.id, verifyCode: code },
       });
-      return { url: link.short_url, id: link.id, real: true };
+      return { url: link.short_url, id: link.id, real: true, verifyCode: code };
     } catch {
       // fall through to simulated link if the API call fails
     }
   }
-  return { url: `https://rzp.io/sim/${payment.id.slice(-8)}`, id: null, real: false };
+  return { url: `https://rzp.io/sim/${payment.id.slice(-8)}`, id: null, real: false, verifyCode: code };
 }
 
 // Draw a simulated outcome for an action given the diagnosed class.
