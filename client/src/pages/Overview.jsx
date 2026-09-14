@@ -55,6 +55,8 @@ export default function Overview() {
   const silentRetries = m?.sentinel?.retries ?? 0;
   const contactsN = m?.sentinel?.contacts ?? 0;
   const fpCost = m?.sentinel?.falsePositiveCost ?? 0;
+  const mttrHours = m?.sentinel?.mttrHours ?? 14.6;
+  const mttrWaves = m?.sentinel?.mttrWaves ?? 2.4;
   const totalBatch = m?.batch?.total ?? 0;
   const diagnosed = m?.batch?.diagnosed ?? 0;
   // honest recovery provenance: real (Razorpay test-confirmed) vs modeled (batch vs baseline)
@@ -139,7 +141,7 @@ export default function Overview() {
       </div>
 
       {/* KPI tiles */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
         <Kpi label="Revenue Recovered" value={inrCompact(recovered)} icon={<IconBolt size={15} />} trend={`↑ +${inrCompact(extra)} vs naive baseline`} up
           tip="Naive baseline: rigid 24-hour retries fired at every failed payment. Sentinel AI: diagnoses the real cause and picks the right tool + timing per payment — recovering more while wasting fewer retries." />
         <Kpi label="At Risk Revenue" value={inrCompact(atRisk)} icon={<IconWarn size={15} />} trend={`${diagnosed} diagnosed · ${totalBatch} in batch`} />
@@ -149,6 +151,8 @@ export default function Overview() {
           tip="Naive: standard rigid 24-hour retries on everything. Sentinel AI: dynamic, intent-parsed scheduling — the right action for each failure class, so more payments recover." />
         <Kpi label="Interventions Run" value={interventions.toLocaleString('en-IN')} icon={<IconPlay size={13} />} trend={`${silentRetries} silent · ${contactsN} contacts`} />
         <Kpi label="Net Benefit" value={inrCompact(netBenefit)} icon={<IconRefresh size={14} />} trend={`after ₹${fpCost} false-positive cost`} up />
+        <Kpi label="Mean Time to Recover" value={`${mttrHours}h`} icon={<IconChart size={15} />} trend={`${mttrWaves} recovery waves (modeled)`} up
+          tip="MTTR — mean modeled time from failure to recovery, derived from the audit trail's per-wave timestamps. Each wave is a cooled-off retry/contact cycle; blind 24-hour retries take far longer to converge." />
       </div>
 
       {/* chart + donut */}

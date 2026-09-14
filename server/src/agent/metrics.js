@@ -45,6 +45,28 @@ export async function computeMetrics() {
     wastedContacts * (model.costPerMessageInr + model.goodwillPenaltyInr) +
     wastedRetries * model.gatewayFeePerRetryInr;
 
+  // ---- MTTR — mean modeled time to recover ----
+  // Recovery runs in "waves"; each wave is a cooled-off retry/contact cycle.
+  // MTTR = mean number of waves a recovered payment took × the modeled cooldown
+  // per wave (waveHours). Derived from the audit trail's per-event `wave`.
+  const HOURS_PER_WAVE = model.waveHours ?? 6;
+  let mttrHours = 0;
+  let mttrWaves = 0;
+  if (recoveredPayments.length) {
+    const recEvents = await prisma.auditEvent.findMany({
+      where: { paymentId: { in: recoveredPayments.map((p) => p.id) }, step: 'outcome', outcome: 'success' },
+      select: { paymentId: true, wave: true },
+      orderBy: { wave: 'asc' },
+    });
+    const firstWave = new Map();
+    for (const e of recEvents) if (!firstWave.has(e.paymentId)) firstWave.set(e.paymentId, e.wave);
+    const waves = [...firstWave.values()].map((w) => w + 1); // wave is 0-indexed; +1 = waves-to-recover
+    if (waves.length) {
+      mttrWaves = +(waves.reduce((a, b) => a + b, 0) / waves.length).toFixed(2);
+      mttrHours = +(mttrWaves * HOURS_PER_WAVE).toFixed(1);
+    }
+  }
+
   // ---- Naive "retry everything" baseline (expected) ----
   const n = model.baselineMaxRetries;
   let baselineRecoveredPaise = 0;
@@ -93,6 +115,8 @@ export async function computeMetrics() {
       interventions,
       interventionsSkipped,
       falsePositiveCost: Math.round(sentinelFpCost),
+      mttrHours,   // mean modeled hours to recover (across recovered payments)
+      mttrWaves,   // mean recovery waves (cooled-off cycles)
     },
     baseline: {
       moneyRecovered: toRs(baselineRecoveredPaise),
